@@ -1,0 +1,28 @@
+body {
+  padding: 10px;
+}
+
+td {
+  white-space: nowrap;
+  padding: 0px 10px;
+}
+
+td.name {
+  text-align: right;
+}
+
+td:not(.name) {
+  text-align: center;
+}
+
+tr.offline td.name {
+  color: #d00;
+}
+
+tr.offline td:not(.name) {
+  color: #999;
+}
+
+tr.online td.name {
+  color: #0d0;
+}

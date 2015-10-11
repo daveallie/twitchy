@@ -1,0 +1,36 @@
+{
+  "name": "Twitchy",
+  "version": "0.0.1",
+  "manifest_version": 2,
+  "description": "Chrome extension to help keep track of your favourite streamers.",
+  "icons": {
+    "16": "images/icon-16.png",
+    "128": "images/icon-128.png"
+  },
+  "default_locale": "en",
+  "background": {
+    "scripts": [
+      "scripts/chromereload.js",
+      "scripts/jquery-2.1.4.min.js",
+      "scripts/background.js"
+    ],
+    "persistent": false
+  },
+  "browser_action": {
+    "default_icon": {
+      "19": "images/icon-19.png",
+      "38": "images/icon-38.png"
+    },
+    "default_title": "twitchy",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
+  "options_ui": {
+    "page": "options.html",
+    "chrome_style": true
+  },
+  "permissions": [
+    "storage",
+    "alarms"
+  ]
+}
