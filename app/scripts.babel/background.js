@@ -117,7 +117,6 @@ function sendMessage(port, message) {
 
 chrome.runtime.onInstalled.addListener(function (details) {
   chrome.alarms.create('update', {periodInMinutes: 5});
-  chrome.storage.local.set({urls: []});
 
   chrome.runtime.onConnect.addListener(function (port) {
     if (port.name === 'channel_data') {
@@ -142,6 +141,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
             if ($.inArray(url, urls) === -1) {
               res.push({url: url, status: 'failed'});
               toAdd.push(url);
+              urls.push(url);
               //channels.push({url: url, display: null, streaming: false, data: null});
               // urls.push(url);
             } else {
@@ -163,7 +163,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
             for (var i = 0, len = responses.length; i < len; i++) {
               if (responses[i][1] === 'success' && responses[i][0].status !== 422) {
                 channels.push({url: responses[i][0].name, display: responses[i][0].display_name, streaming: false, data: null});
-                for (var j = 0, len = res.length; j < len; j++) {
+                for (var j = 0, res_len = res.length; j < res_len; j++) {
                   if (res[j].url === responses[i][0].name) {
                     res[j].status = 'success';
                     break;
@@ -181,17 +181,32 @@ chrome.runtime.onInstalled.addListener(function (details) {
             port.postMessage(res);
           });
         } else if (request.action === 'delete') {
-          var urls = [];
+          var remainingURLs = [],
+              res = [];
           channels = $.grep($.map(channels, function (channel) {
-            if ($.inArray(channel.url, request.urls) === -1) {
-              urls.push(channel.url);
+            var idx = $.inArray(channel.url, request.urls);
+            if (idx === -1) {
+              remainingURLs.push(channel.url);
               return channel;
+            } else {
+              res.push({url: request.urls[idx], status: 'success'});
             }
           }), function (n) {
             return n;
           });
 
-          port.postMessage('OK');
+          var resUrls = $.map(res, function(result) {return result.url});
+          console.log(resUrls);
+          res = $.map(request.urls, function(url) {
+            var idx = $.inArray(url, resUrls);
+            if (idx === -1) {
+              return {url: url, status: 'no_channel'};
+            } else {
+              return res[idx];
+            }
+          });
+
+          port.postMessage(res);
           chrome.storage.local.set({urls: urls});
         }
       });
@@ -201,12 +216,20 @@ chrome.runtime.onInstalled.addListener(function (details) {
   chrome.alarms.onAlarm.addListener(function(alarm) {
     reloadAll(false);
   });
-
-  reloadAll(false);
 });
 
 chrome.storage.local.get('urls', function(response) {
-  channels = $.map(response.urls, function(url) {
+  var urls = [];
+
+  if (response.urls === null) {
+    chrome.storage.local.set({urls: []});
+  } else {
+    urls = response.urls;
+  }
+
+  channels = $.map(urls, function(url) {
     return {url: url, display: null, streaming: false, data: null};
   });
+
+  reloadAll(false);
 });
