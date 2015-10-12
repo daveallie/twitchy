@@ -205,7 +205,6 @@ chrome.runtime.onInstalled.addListener(function (details) {
   reloadAll(false);
 });
 
-
 chrome.storage.local.get('urls', function(response) {
   channels = $.map(response.urls, function(url) {
     return {url: url, display: null, streaming: false, data: null};
