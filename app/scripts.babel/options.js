@@ -3,7 +3,6 @@
 var urls = [],
     port = chrome.runtime.connect({name: 'options'});
     port.onMessage.addListener(function(response) {
-      console.log(response);
       $('#status').html($.map(response, function(r) {
         return r.url + ': ' + r.status
       }).join("<br>"));
@@ -26,14 +25,14 @@ function setDisabled(disabled) {
 }
 
 $(document).ready(function() {
-  $('#addURL').on('click', function() {
+  $('#addURL').click(function() {
     var urls = $.map($('#url').val().toLowerCase().trim().split(/[,\s]+/), function(url) {return url.trim()});
     if (urls.length > 1 || (urls.length === 1 && urls[0] !== '')) {
       sendMessage('add', urls);
       setDisabled(true);
     }
   });
-  $('#delURL').on('click', function() {
+  $('#delURL').click(function() {
     var urls = $.map($('#url').val().toLowerCase().trim().split(/[,\s]+/), function(url) {return url.trim()});
     if (urls.length > 1 || (urls.length === 1 && urls[0] !== '')) {
       sendMessage('delete', urls);

@@ -3,7 +3,6 @@
 var port = chrome.runtime.connect({name: 'channel_data'});
 port.postMessage({force: false});
 port.onMessage.addListener(function(response) {
-  console.log(response.channels);
   if (response.success) {
     var $table = $('#info table');
     $table.empty();
@@ -20,13 +19,17 @@ port.onMessage.addListener(function(response) {
     var crelArgs = [$tbody[0]];
     $.each(response.channels, function(_, channel) {
       if (channel.streaming) {
-        crelArgs.push(crel('tr', {class: 'online'}, crel('td', {class: 'name'}, channel.display + ':'), crel('td', channel.data.game), crel('td', channel.data.viewers), crel('td', $.timeago(channel.data.created_at))));
+        crelArgs.push(crel('tr', {class: 'online'}, crel('td', {class: 'name', 'data-url': 'http://www.twitch.tv/' + channel.url}, channel.display + ':'), crel('td', channel.data.game), crel('td', channel.data.viewers), crel('td', $.timeago(channel.data.created_at))));
       } else {
-        crelArgs.push(crel('tr', {class: 'offline'}, crel('td', {class: 'name'}, channel.display + ':'), crel('td', '-'), crel('td', '-'), crel('td', '-')));
+        crelArgs.push(crel('tr', {class: 'offline'}, crel('td', {class: 'name', 'data-url': 'http://www.twitch.tv/' + channel.url}, channel.display + ':'), crel('td', '-'), crel('td', '-'), crel('td', '-')));
       }
     });
 
     crel.apply(this, crelArgs);
+
+    $('.name').click(function() {
+      chrome.tabs.create({url: $(this).data('url') + '/popout'});
+    });
   } else {
     console.error('fail');
   }

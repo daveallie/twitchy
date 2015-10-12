@@ -9,6 +9,7 @@ td {
 
 td.name {
   text-align: right;
+  cursor: pointer;
 }
 
 td:not(.name) {

@@ -1,8 +1,6 @@
 'use strict';
 
-var channels = [],// { url: 'sips_', display: null, streaming: false, data: null }],
-                // { url: 'riotgames', display: null, streaming: false, data: null },
-                // { url: 'crendor', display: null, streaming: false, data: null }],
+var channels = [],
     lastLoaded = 0;
 
 function findChannelIndex(url) {
@@ -107,6 +105,7 @@ function reloadAll(callback) {
     callback && callback({ channels: channels, success: true, reloaded: true });
   }, function () {
     console.error('fail');
+    lastLoaded = 0;
     callback && callback({ channels: channels, success: false, reloaded: false });
   });
 }
@@ -140,10 +139,9 @@ chrome.runtime.onInstalled.addListener(function (details) {
           $.each(request.urls, function(_, url) {
             if ($.inArray(url, urls) === -1) {
               res.push({url: url, status: 'failed'});
-              toAdd.push(url);
-              urls.push(url);
-              //channels.push({url: url, display: null, streaming: false, data: null});
-              // urls.push(url);
+              if ($.inArray(url, toAdd) === -1) {
+                toAdd.push(url);
+              }
             } else {
               res.push({url: url, status: 'exists'});
             }
@@ -196,7 +194,6 @@ chrome.runtime.onInstalled.addListener(function (details) {
           });
 
           var resUrls = $.map(res, function(result) {return result.url});
-          console.log(resUrls);
           res = $.map(request.urls, function(url) {
             var idx = $.inArray(url, resUrls);
             if (idx === -1) {
@@ -207,7 +204,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
           });
 
           port.postMessage(res);
-          chrome.storage.local.set({urls: urls});
+          chrome.storage.local.set({urls: remainingURLs});
         }
       });
     }
@@ -230,6 +227,5 @@ chrome.storage.local.get('urls', function(response) {
   channels = $.map(urls, function(url) {
     return {url: url, display: null, streaming: false, data: null};
   });
-
   reloadAll(false);
 });
