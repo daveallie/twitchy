@@ -1,6 +1,6 @@
 {
   "name": "Twitchy",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "manifest_version": 2,
   "description": "Chrome extension to help keep track of your favourite streamers.",
   "icons": {
@@ -9,7 +9,6 @@
   },
   "background": {
     "scripts": [
-      "scripts/chromereload.js",
       "scripts/third_party/jquery.js",
       "scripts/background.js"
     ],
