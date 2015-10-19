@@ -114,101 +114,102 @@ function sendMessage(port, message) {
   port.postMessage(message);
 }
 
-chrome.runtime.onInstalled.addListener(function (details) {
-  chrome.alarms.create('update', {periodInMinutes: 5});
-
-  chrome.runtime.onConnect.addListener(function (port) {
-    if (port.name === 'channel_data') {
-      port.onMessage.addListener(function (request) {
-        if (request.force === true || Math.floor(new Date().getTime() / 1000) - lastLoaded > 1) {
-          reloadAll(sendMessage.bind(this, port));
-        } else {
-          port.postMessage({ channels: channels, success: true, reloaded: false });
-        }
-      });
-    }
+chrome.runtime.onConnect.addListener(function (port) {
+  if (port.name === 'channel_data') {
+    port.onMessage.addListener(function (request) {
+      if (request.force === true || Math.floor(new Date().getTime() / 1000) - lastLoaded > 60) {
+        reloadAll(sendMessage.bind(this, port));
+      } else {
+        port.postMessage({ channels: channels, success: true, reloaded: false });
+      }
+    });
+  }
 
 
 
-    else if (port.name === 'options') {
-      port.onMessage.addListener(function (request) {
-        if (request.action === 'add') {
-          var urls = $.map(channels, function(channel) {return channel.url}),
-              toAdd = [],
-              res = [];
-          $.each(request.urls, function(_, url) {
-            if ($.inArray(url, urls) === -1) {
-              res.push({url: url, status: 'failed'});
-              if ($.inArray(url, toAdd) === -1) {
-                toAdd.push(url);
-              }
-            } else {
-              res.push({url: url, status: 'exists'});
+  else if (port.name === 'options') {
+    port.onMessage.addListener(function (request) {
+      if (request.action === 'add') {
+        var urls = $.map(channels, function(channel) {return channel.url}),
+            toAdd = [],
+            res = [];
+        $.each(request.urls, function(_, url) {
+          if ($.inArray(url, urls) === -1) {
+            res.push({url: url, status: 'failed'});
+            if ($.inArray(url, toAdd) === -1) {
+              toAdd.push(url);
             }
-          });
+          } else {
+            res.push({url: url, status: 'exists'});
+          }
+        });
 
-          $.when.apply($, $.map(toAdd, function (url) {
-            return getSingleChannelInfo(url);
-          })).then(function () {
-            var responses = [];
+        $.when.apply($, $.map(toAdd, function (url) {
+          return getSingleChannelInfo(url);
+        })).then(function () {
+          var responses = [];
 
-            if (toAdd.length === 1) {
-              responses.push(arguments);
-            } else {
-              responses = arguments;
-            }
+          if (toAdd.length === 1) {
+            responses.push(arguments);
+          } else {
+            responses = arguments;
+          }
 
-            for (var i = 0, len = responses.length; i < len; i++) {
-              if (responses[i][1] === 'success' && responses[i][0].status !== 422) {
-                channels.push({url: responses[i][0].name, display: responses[i][0].display_name, streaming: false, data: null});
-                for (var j = 0, res_len = res.length; j < res_len; j++) {
-                  if (res[j].url === responses[i][0].name) {
-                    res[j].status = 'success';
-                    break;
-                  }
+          for (var i = 0, len = responses.length; i < len; i++) {
+            if (responses[i][1] === 'success' && responses[i][0].status !== 422) {
+              channels.push({url: responses[i][0].name, display: responses[i][0].display_name, streaming: false, data: null});
+              for (var j = 0, res_len = res.length; j < res_len; j++) {
+                if (res[j].url === responses[i][0].name) {
+                  res[j].status = 'success';
+                  break;
                 }
-                urls.push(responses[i][0].name);
               }
+              urls.push(responses[i][0].name);
             }
-
-            port.postMessage(res);
-            reloadAll(false);
-            chrome.storage.local.set({urls: urls});
-          }, function () {
-            console.error('failed');
-            port.postMessage(res);
-          });
-        } else if (request.action === 'delete') {
-          var remainingURLs = [],
-              res = [];
-          channels = $.grep($.map(channels, function (channel) {
-            var idx = $.inArray(channel.url, request.urls);
-            if (idx === -1) {
-              remainingURLs.push(channel.url);
-              return channel;
-            } else {
-              res.push({url: request.urls[idx], status: 'success'});
-            }
-          }), function (n) {
-            return n;
-          });
-
-          var resUrls = $.map(res, function(result) {return result.url});
-          res = $.map(request.urls, function(url) {
-            var idx = $.inArray(url, resUrls);
-            if (idx === -1) {
-              return {url: url, status: 'no_channel'};
-            } else {
-              return res[idx];
-            }
-          });
+          }
 
           port.postMessage(res);
-          chrome.storage.local.set({urls: remainingURLs});
-        }
-      });
-    }
-  });
+          reloadAll(false);
+          chrome.storage.local.set({urls: urls});
+        }, function () {
+          console.error('failed');
+          port.postMessage(res);
+        });
+      } else if (request.action === 'delete') {
+        var remainingURLs = [],
+            res = [];
+        channels = $.grep($.map(channels, function (channel) {
+          var idx = $.inArray(channel.url, request.urls);
+          if (idx === -1) {
+            remainingURLs.push(channel.url);
+            return channel;
+          } else {
+            res.push({url: request.urls[idx], status: 'success'});
+          }
+        }), function (n) {
+          return n;
+        });
+
+        var resUrls = $.map(res, function(result) {return result.url});
+        res = $.map(request.urls, function(url) {
+          var idx = $.inArray(url, resUrls);
+          if (idx === -1) {
+            return {url: url, status: 'no_channel'};
+          } else {
+            return res[idx];
+          }
+        });
+
+        port.postMessage(res);
+        chrome.storage.local.set({urls: remainingURLs});
+      }
+    });
+  }
+});
+
+
+chrome.runtime.onInstalled.addListener(function (details) {
+  chrome.alarms.create('update', {periodInMinutes: 5});
 
   chrome.alarms.onAlarm.addListener(function(alarm) {
     reloadAll(false);
