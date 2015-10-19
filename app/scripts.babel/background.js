@@ -219,7 +219,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
 chrome.storage.local.get('urls', function(response) {
   var urls = [];
 
-  if (response.urls === null) {
+  if (typeof response.urls === "undefined" || response.urls === null) {
     chrome.storage.local.set({urls: []});
   } else {
     urls = response.urls;
