@@ -25,7 +25,7 @@ port.onMessage.addListener(function(response) {
       if (channel.streaming) {
         crelArgs.push(crel('tr', {class: 'online'}, crel('td', {class: 'name', 'data-url': 'http://www.twitch.tv/' + channel.url}, channel.display + ':'), crel('td', channel.data.game), crel('td', channel.data.viewers), crel('td', $.timeago(channel.data.created_at))));
       } else {
-        crelArgs.push(crel('tr', {class: 'offline'}, crel('td', {class: 'name', 'data-url': 'http://www.twitch.tv/' + channel.url}, channel.display + ':'), crel('td', '-'), crel('td', '-'), crel('td', '-')));
+        crelArgs.push(crel('tr', {class: 'offline'}, crel('td', {class: 'name', 'data-url': 'http://www.twitch.tv/' + channel.url}, channel.display + ':'), crel('td', '-'), crel('td', '-'), crel('td', 'Not Streaming')));
       }
     });
 
