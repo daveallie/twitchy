@@ -1,9 +1,13 @@
 'use strict';
 
+var $message = $('#message');
+$message.html('LOADING...');
+$message.show();
 var port = chrome.runtime.connect({name: 'channel_data'});
 port.postMessage({force: false});
 port.onMessage.addListener(function(response) {
   if (response.success) {
+    $message.hide();
     var $table = $('#info table');
     $table.empty();
 
@@ -31,6 +35,7 @@ port.onMessage.addListener(function(response) {
       chrome.tabs.create({url: $(this).data('url') + '/popout'});
     });
   } else {
+    $message.html('Error, please try again.');
     console.error('fail');
   }
 });
