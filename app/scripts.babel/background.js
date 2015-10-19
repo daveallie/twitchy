@@ -130,7 +130,7 @@ chrome.runtime.onConnect.addListener(function (port) {
   else if (port.name === 'options') {
     port.onMessage.addListener(function (request) {
       if (request.action === 'add') {
-        var urls = $.map(channels, function(channel) {return channel.url}),
+        var urls = $.map(channels, function(channel) { return channel.url; }),
             toAdd = [],
             res = [];
         $.each(request.urls, function(_, url) {
@@ -158,7 +158,7 @@ chrome.runtime.onConnect.addListener(function (port) {
           for (var i = 0, len = responses.length; i < len; i++) {
             if (responses[i][1] === 'success' && responses[i][0].status !== 422) {
               channels.push({url: responses[i][0].name, display: responses[i][0].display_name, streaming: false, data: null});
-              for (var j = 0, res_len = res.length; j < res_len; j++) {
+              for (var j = 0, resLen = res.length; j < resLen; j++) {
                 if (res[j].url === responses[i][0].name) {
                   res[j].status = 'success';
                   break;
@@ -190,7 +190,7 @@ chrome.runtime.onConnect.addListener(function (port) {
           return n;
         });
 
-        var resUrls = $.map(res, function(result) {return result.url});
+        var resUrls = $.map(res, function(result) { return result.url; });
         res = $.map(request.urls, function(url) {
           var idx = $.inArray(url, resUrls);
           if (idx === -1) {
@@ -208,10 +208,10 @@ chrome.runtime.onConnect.addListener(function (port) {
 });
 
 
-chrome.runtime.onInstalled.addListener(function (details) {
+chrome.runtime.onInstalled.addListener(function (_) {
   chrome.alarms.create('update', {periodInMinutes: 5});
 
-  chrome.alarms.onAlarm.addListener(function(alarm) {
+  chrome.alarms.onAlarm.addListener(function(_) {
     reloadAll(false);
   });
 });
@@ -219,7 +219,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
 chrome.storage.local.get('urls', function(response) {
   var urls = [];
 
-  if (typeof response.urls === "undefined" || response.urls === null) {
+  if (typeof response.urls === 'undefined' || response.urls === null) {
     chrome.storage.local.set({urls: []});
   } else {
     urls = response.urls;
