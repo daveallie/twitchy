@@ -25,5 +25,5 @@ tr.offline td:not(.name) {
 }
 
 tr.online td.name {
-  color: #0d0;
+  color: #0a0;
 }
