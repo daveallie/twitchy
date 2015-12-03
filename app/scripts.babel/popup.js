@@ -1,6 +1,27 @@
 'use strict';
 
 var $message = $('#message');
+var compareNames = function(na, nb) {
+  return na.toLowerCase().localeCompare(nb.toLowerCase());
+};
+var compareChannels = function(ca, cb) {
+  if (ca.streaming && cb.streaming) {
+    if (ca.data.viewers > cb.data.viewers) {
+      return -1;
+    } else if (ca.data.viewers < cb.data.viewers) {
+      return 1;
+    } else {
+      return compareNames(ca.display, cb.display);
+    }
+  } else if (ca.streaming && !cb.streaming) {
+    return -1;
+  } else if (!ca.streaming && cb.streaming) {
+    return 1;
+  } else {
+    return compareNames(ca.display, cb.display);
+  }
+};
+
 $message.html('LOADING...');
 $message.show();
 var port = chrome.runtime.connect({name: 'channel_data'});
@@ -21,7 +42,10 @@ port.onMessage.addListener(function(response) {
     )).children('tbody');
 
     var crelArgs = [$tbody[0]];
-    $.each(response.channels, function(_, channel) {
+    var channels = response.channels;
+    channels.sort(compareChannels);
+
+    $.each(channels, function(_, channel) {
       if (channel.streaming) {
         crelArgs.push(crel('tr', {class: 'online'}, crel('td', {class: 'name', 'data-url': 'http://www.twitch.tv/' + channel.url}, channel.display + ':'), crel('td', channel.data.game), crel('td', channel.data.viewers), crel('td', $.timeago(channel.data.created_at))));
       } else {
